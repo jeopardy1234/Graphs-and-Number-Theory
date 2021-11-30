@@ -1,0 +1,124 @@
+\chapter{Shortest Path Algorithms}
+
+\section{Introduction}
+This is a very basic, yet important topic of graph theory. This has many real life applications such as: finding the shortest route between two cities, minimum cost of wiring, etc. Digital mapping services in Gmaps, telephone networks, IP routing are some places where we use shortest path algorithms. Shortest path algorithms are mainly classified into two: Single source shortest path and Multiple source shortest path.
+
+\section{Single Source Shortest Path}
+As the name suggests, we have once source node $S$ , and we find the minimum distance from this node to any other node in the graph.
+
+\subsection{Dijkstra }
+Let's make an array $d[|V|+1]$ in which we record the current length of the shortest path from s to $v$ in $d[|V|+1]$ for each vertex v. Initially, $d[S]=0$, and this length equals infinity for all other vertices. In the implementation a sufficiently large number (which is guaranteed to be greater than any possible path length) is chosen as $\infty$.\\
+In addition, we maintain a Boolean array $u[|V|+1]$ which stores for each vertex $v$ whether it's marked. Initially all vertices are unmarked. \\
+The Dijkstra algorithm iterates for n times. Each iteration, an unmarked vertex v with the lowest value d[v] is chosen as the unmarked vertex.
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int> d (num_vertices+1, INF);
+void dijkstra()
+{
+    priority_queue <pii, vector<pii>, greater<pii> > pq;
+    pq.push({0,S});
+    d[S] = 0;
+    while(!pq.empty())
+    {
+        int x = pq.top().second;
+        pq.pop();
+        if(vis[x] == true)
+            continue;
+        vis[x] = true;
+        for(auto i:v[x])
+        {
+            int ver = i.first;
+            ll len = i.second;
+            if(d[ver] == d[x] + len)
+            {
+                num[ver]++;
+            }
+            else if(d[ver] > d[x] + len)
+            {
+                num[ver] = 1;
+                d[ver] = d[x] + len;
+                pq.push({d[ver],ver});
+            }
+        }
+    }
+}
+\end{minted}
+
+Obviously, the start vertex $S$ will be chosen in the first iteration.Following that, relaxations from vertex v are performed: all edges of the type $(v,\text{to})$ are evaluated, and the method tries to improve the value $d[{to}]$ for each vertex. If the current edge's length equals $\text{len}$, the relaxation code is:
+$$
+    d[\text{to}]=\text{min}(d[\text{to}],d[v]+\text{len})
+$$
+The current iteration finishes after all such edges have been examined. After $n$ iterations, all of the vertices will be relaxed.
+
+\subsection{Bellman Ford}
+Unlike the Dijkstra algorithm, this algorithm can also be applied to graphs containing negative weight edges . However, if the graph contains a negative cycle, then, clearly, the shortest path to some vertices may not exist (due to the fact that the weight of the shortest path must be equal to minus infinity); however, this algorithm can be modified to signal the presence of a cycle of negative weight, or even deduce this cycle.\\
+For now, let's assume that the graph doesn't have negative cycles. We will create an array of distances $d[1 \cdots n]$, which after execution of the algorithm will contain the answer to the problem. In the beginning we fill it as follows: $d[S]=0$, where $S$ is the source vertex and all other elements equal to $\infty$.\\
+We perform the following procedure $n-1$ times : traverse through all the edges of the graph and relax the destination node. In other words $d(v) = \text{min}(dist[u] + l(u,v))$. We claim that the final distance array is the solution to the single source shortest path problem. But why do we run this $n-1$ times? It's simple - Realize that the shortest path between any two nodes takes atmost $n-1$ edges. So relaxing each edge $n-1$ times is enough. Here's a pseudocode:
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int> d (num_vertices+1, INF);
+void BellmanFord()
+{
+    d[v] = 0;
+    for (int i=0; i<n-1; ++i)
+        for (int j=0; j<num_edges+1; ++j)
+            if (d[e[j].a] < INF)
+                d[e[j].b] = min (d[e[j].b], d[e[j].a] + edg[j].cost);
+}
+\end{minted}
+
+To detect negative cycles, simply run this algorithm for $n-1$ more times, and check whether any value in $d$ array changes. If it does, then there does exist a negative cycle.
+
+\section{Multiple Source Shortest Path}
+Now, we need to find the minimum distance between any pair of vertices. For this, we use the famous Floyd Warshall algorithm. This algorithm uses dynamic programming, and is surprisingly much easier than the ones we learnt.
+
+\subsection{Floyd Warshall}
+The Floyd Warshall Algorithm is used to solve the issue of finding the shortest path between two pairs of verticees. The goal is to discover the shortest distance between each pair of vertices in an edge-weighted directed Graph.\\
+Dijkstra isn't relevant because we're taking into account even the negative edges. Bellman-Ford, on the other hand, would result in a $O(V^4)$ complexity that is exceedingly low. The complexity of this approach is reduced to $O(V^3)$ using Dynamic Programming.\\
+We define the following DP state: Let $f(i,j,k)$ be the shortest path from node $i$ to node $j$ that uses only the vertices $1,2,3,\cdots,k$ as intermediates. 
+
+We define the transition state as follows :
+$$
+f(i,j,k) = \text{min}(f(i,j,k-1) , f(i,k,k-1)+f(k,j,k-1))
+$$
+This is because, we can either include or exclude the $k^{th}$ vertex as an intermediate. We calculate the answer in both cases, and return the minimum.
+
+We can see that this would require both :
+
+$\text{Time Complexity = } O(V^3)$
+
+$\text{Space Complexity = }O(V^3)$\\
+However, we can improve the space complexity here. Rather than creating a $3D$ array, for storing each of the $2D$ arrays of a given dimension, we can keep updating the $2D$ array itself, as we backtrack by just one step. This reduces $\text {Space Complexity to }O(V^2)$. Have a look at the pseudocodde:
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{python}
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        dp[i][j] = INFINITY
+for all (i,j) in E:
+    dp[i][j] = length(i,j)
+for k in range(1,n+1):
+    for i in range(1,n+1):
+        for j in range(1,n+1):
+            dp[i][j] = min(dp[i][k] + dp[k][j] , dp[i][j])
+\end{minted}

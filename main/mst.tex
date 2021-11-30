@@ -1,0 +1,144 @@
+\chapter{Minimum Spanning Tree}
+\section{Introduction}
+Given a connected and undirected graph, a spanning tree of that graph is a subgraph that is a tree and connects all the vertices together. A single graph can have many different spanning trees. Minimum spanning tree as the name suggests is the spanning tree with minimum weight. Weight of a graph is defined as the sum of weights of all its edges. There are many ways to find the MST, and most of them are greedy algorithms. In this chapter, we will discuss two of them - Prim's and Kruskal's algorithms.
+
+\section{Prim's Algorithm}
+This is a greedy algorithm to find the MST of a graph. It's probably the most simple and intuitive, and yet very efficient solution to the problem. The idea is quite simple - It starts with some random node of a graph, and selects the most efficient (min weight) edge. At any stage of the algorithm, if $V$ vertices have been covered, we examine the edges connected to these $V$ vertices, and greedily select the most efficient one.\\
+Let's have a look at how it exactly works through the code. We first push the any node (say - vertex $1$) into a priority queue $pq$. As you can see, the priority queue stores a pair. This pair is of the form ,$\{\text{EdgeWeight}, \text{DVertex}\}$ where  $\text{DVertex}$, is the child of some some vertex $\text{SVertex}$ , and the weight of edge connecting them is $\text{EdgeWeight}$
+\clearpage
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+typedef pair<int,int> pii;
+priority_queue <pii, vector<pii>, greater<pii> > pq; 
+/*
+ * MinHeap Priority Queue
+ * <weight , vertex>
+ */
+int PrimsMST(int n,vector<vector<pair<int,int>>>adj)  
+{
+	pq.push({0,1});      //Root node not connected to anything
+	bool vis[n+1] = {}; //To ensure no revisit
+	ll ans = 0;
+	while(!pq.empty())
+	{
+		int to = pq.top().second;
+		int wt = pq.top().first;	
+		if(vis[to])
+		{
+			pq.pop();	//Keep popping until unvisited vertex found
+			continue;
+		}
+		vis[to] = true;
+		ans += wt;		//Top edge is minweight
+		pq.pop();
+		for(auto &i : adj[to])
+		{
+			if(!vis[i.first])
+				pq.push({i.second,i.first});
+		}
+	}
+	return ans;
+}
+\end{minted}
+Since vertex $1$ (root node) wasn't connected to anything, we pass the first parameter as $0$. If the vertex to which the edge is connected was already visited earlier (i.e. relaxed earlier), we pop it off the queue. We do this until we find an unvisited vertex. Once found, we start pushing all it's edge into the priority queue. Obviously, we take into account that no visited vertex edge is included. That's it! Just keep updating the weight of MST, or keep storing the edges of MST as per your need. Since we ensured that no visited vertex is computed twice, so there would be no cycles. Hence , the resultant graph would be a tree. As we keep picking the smallest edges, so the final graph would be and MST.
+
+\subsection{Complexity Analysis}
+Pushing into and out of priority queue takes logarithmic time. So, the overall complexity of the algorithmm is $O(E \log E)$. Space complexity on the other hand is $O(n)$. 
+
+\section{Kruskal's Algorithm}
+Just like Prim's algorithm, this is also a greedy algorithm. The idea is quite simple! Since we want a tree with minimum weight, we start picking the edges in increasing order of their weights. While doing so, we avoid the edges that make a cycle. Since we avoid cycles, the resulting graph would be a tree. But why does this algorithm result in an MST? A good mathematical proof can be given by cut theory, but we won't discuss it here. For now it should be quite intuitive that since there are no cycles and we pick edges in sorted order, so the resulting graph should be an MST. A pseudocode would look as follows:
+\begin{itemize}
+   \item Store all the Edges along with their weights in a vector
+   \item Sort these edges in order of their weight
+   \item Start picking edges from left to right and add them to the MST set
+   \item If the current edge forms a cycle with the currently formed MST, ignore this edge. Else, include it in the MST
+   \item Repeat the last 2 steps until there are $n-1$ edges in the MST.
+ \end{itemize}
+ 
+There's but one issue. How do we figure out if there is a cycle? For this, we use a special data structure called disjoint set union. \clearpage
+
+\subsection{Disjoint Set Union}
+DSU data structure provides the following capabilities: We are given several elements, each of which is a separate set. A DSU will have an operation to combine any two sets, and it will be able to tell in which set a specific element is.
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+void make_set(int parent[],int rank[],int v) {
+    parent[v] = v;      //Parent(node) = node
+    rank[v] = 0;	//rank[node] = 0
+}
+
+int find_set(int parent[],int v) {
+    if (v == parent[v])	
+        return v;//If node itself is the parent
+    return parent[v] = find_set(parent,parent[v]); 
+   //Else find a parent + beautiful optimization
+}
+
+void union_sets(int a, int b, int parent[], int rank[]) {
+    a = find_set(parent,a);	//finding parent of set
+    b = find_set(parent,b);	//finding parent of set
+    if (a != b) {
+        if (rank[a] < rank[b]) //to ensure smaller rank merges with larger
+            swap(a, b);
+        parent[b] = a;		   //Merging them here
+        if (rank[a] == rank[b])
+            rank[a]++;		   //Depth increases here
+    }
+}
+\end{minted}
+The primary operations of DSU are :
+\begin{itemize}
+  \item make-set($v$) - Sets the parent of each node to itself and size to 1 / rank to 0
+  \item union-sets($a,b$) - Merges the specified sets
+  \item find-set($v$) - Finds the parent node for the given vertex
+ \end{itemize}
+ \subsubsection{DSU and Cycles}
+ Now we need to figure out some way to detect cycles using DSU. Realize that if we connect two disconnected graphs using exactly one edge, then we will never form a cycle. On the other hand, if we connect any two vertics of a connected graph by an edge, we will definitely form a cycle. So the idea is quite simple. If for and edge $(u,v)$, if $u$ and $v$ have the same parent, then there is a cycle. If they don't then there won't be any cycle. Just take the union of these disjoint components. 
+ 
+ \subsection{Implementation}
+ \begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int Kruskal(vector<pair<int, pair<int,int>>>v, int parent[], int rank[])
+{
+    //v is of the form {edge_len,{source,destination}}
+    sort(v.begin(),v.end());    //Sorting the edge lengths
+    int ans = 0;                 
+    for(auto &i : v)
+    {
+        int p1 = i.second.first;    //Parent of first vertex
+        int p2 = i.second.second;   //Parent of second vertex
+        if(find_set(parent,p1) != find_set(parent,p2)) //Cycle checking
+        {
+            ans += i.first;
+            union_sets(p1,p2,parent,rank); //If no cycle -> merge the sets
+        }
+    }
+    return ans;
+}
+
+\end{minted}
+
+Just like we discussed earlier, we sort the edges and keep picking them while avoiding cycles. To avoid these cycles, we check if the source and destination node have the same parent. If they don't, then we take a union of these sets.
+
+\subsection{Complexity Analysis}
+DSU takes almost constant time for any operation. The main time is spent in sorting the edges. So the time complexity is $O(E log E)$. The space complexity is $O(E)$. 

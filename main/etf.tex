@@ -1,0 +1,169 @@
+\chapter{Euler Totient Function}
+
+\section{Introduction}
+Euler's totient function, also known as phi-function $\phi(n)$, counts the number of integers between $1$ and n inclusive, which are coprime to $n$. Two numbers are coprime if their greatest common divisor equals 1 (1 is considered to be coprime to any number).For example, $\phi(12) = 4$, because it is coprime to $1,5,7,11$.
+
+\section{Properties of Totient Function}
+Some important properties of $\phi$ function are as follows:
+\begin{enumerate}
+  \item $\phi(p) = p-1$ where $p$ is a prime.
+  \item $\phi(p^x) = p^x - p^{x-1}$ where $p$ is a prime
+  \item $\phi(xy) = \phi(x)\phi(y)$, where $x$ and $y$ are prime
+\end{enumerate} 
+The first one is quite easy to prove. Since $p$ is a prime, so it is coprime to every number less than $p$. So $\phi(p) = p-1$. For the second one, $\phi(p^x) = p^x - \text{(No of integers coprime with p less than p)}$. These numbers are obviously multiples of $p$ less than $p^x$, that is $p,2p,3p,\cdots p^x$. So there are $p^x/p$ such numbers and hence $\phi(p^x) = p^x - p^{x-1}$. The third rule follows from the chinese remainder theorem which we wont discuss here.
+
+\clearpage
+\section{Implementation}
+Ofcouse, we code a $O(N \log N)$ brute force solution for this. However, we can use the properties described above to do much better. Let $p_1, p_2, \cdots , p_k$ be the prime factors of $n$.
+
+\begin{align*}
+    \phi(n) &= \phi(p_1 ^ {\alpha_1}) \phi(p_2 ^ {\alpha_2})  \cdots \phi(p_k ^ {\alpha_k})\\
+    &=(p_1^{\alpha_1} - p_1^{\alpha_1-1})(p_2^{\alpha_2} - p_2^{\alpha_2-1})\cdots (p_k^{\alpha_k} - p_k^{\alpha_k-1})\\
+    &= p_1^{\alpha_1}p_2^{\alpha_2}\cdots p_1^{\alpha_k} \left(1-\frac{1}{p_1}\right)\left(1-\frac{1}{p_2}\right)\cdots\left(1-\frac{1}{p_k}\right)\\
+    &= n\left(1-\frac{1}{p_1}\right)\left(1-\frac{1}{p_2}\right)\cdots\left(1-\frac{1}{p_k}\right)
+\end{align*}
+
+We use the above equation to find $\phi(n)$
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int phi(int n)
+{
+    int val = n;
+    for(int i=2; i*i <= n; i++)
+    {
+        if(n%i == 0)
+        {
+            while(n%i == 0)
+                n /= i;
+            val -= val/i;
+        }
+    }
+    if(n > 1) //incase n itself is prime
+        val = val - val/n;
+    return val;
+}
+\end{minted}
+
+\subsection{Complexity Analysis}
+The time complexity is the same as finding all the prime factors of a number which is $O(\sqrt{n})$. We are not using any array to store data, so the space complexity is $O(1)$
+
+\subsection{Totient Through $n$}
+Let's say we want to find the Euler Totient for all numbers from $1$ through $n$. One way would be to use the method described above for all numbers from $1$ through $n$. However, this results in a somewhat poor complexity of $O(n\sqrt{n})$. We can do better.\\
+We esentially need a way to find prime factors of all numbers from $1$ through $n$. Ding Dong says Sieve of Eratosthenes. 
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int> nphi(int n)
+{
+    vector<int>phi(n+1);
+    for(int i=1; i<=n; i++)
+        phi[i] = i;
+    for(int i=2; i<=n; i++)
+        if(phi[i] == i)
+            for(int j=i; j<=n; j+=i)
+                phi[j] -= phi[j]/i;
+    return phi;
+}
+\end{minted}
+
+The time complexity of above code is the same as time complexity of prime factorizing all numbers from $1$ through $n$ which is $O(n \log(\log n))$
+
+\section{Euler's Theorem}
+Euler's Theorem states that 
+\begin{equation}
+    a^{\phi(m)} \equiv 1 (\text{mod }m)
+\end{equation}
+Where $a$ and $m$ are relatively prime, that is $\text{gcd}(a,m) = 1$. We do not go about proving this theorem, but we will look at some important applications of this:
+
+\subsection{Fermat's Little Theorem}
+This is a special case of Euler's Theorem, where $m$ is a prime. We already saw that $\phi(p) = p-1$ where $p$ is a prime. So, Fermat's little theorem states that 
+\begin{equation}
+    a^{p-1} \equiv  1 (\text{mod }p)
+\end{equation}
+
+\subsection{Modular Inverse}
+We already discussed a way to find modular inverse in the previous chapter. Let's use the concepts we learnt in this chapter to device a new way. Using Fermat's little theorem,
+\begin{align*}
+    &a^{p-1} \equiv  1 (\text{mod }p)\\
+    &a^{p-2} \equiv  a^{-1} (\text{mod }p)    
+\end{align*}
+The condition for existence of modular inverse holds as well : $a$ and $p$ are coprime.
+
+\subsection{Binomial Coefficients modulo large prime}
+This is a beautiful application of Fermat's Little Theorem. The problem in hand is, let's say we have three integers $N$ , $R$ , $P$ , where $P$ is a prime, we need to compute $\binom{N}{R} \text{ modulo } P$. For doing this, we first find $i\%P$ $\forall i \in \{1,N\}$\\
+Now, $\binom{N}{R} \text{ modulo } P = N! \% P * (R!) ^{-1} \% P *(N-R)! ^{-1} \% P $.
+To calculate this, we use Fermat's little theorem.\\
+We need to have a look at how to calculate $a^b \% P$. We use the normal binary exponentiation to do this.
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int modpow(int a, int b, int m)
+{
+    int res = 1;
+    while(b)
+    {
+        if(b%2)
+            res = (res * 1LL * a)%m;
+        b = b >> 1;
+        a = (a * 1LL * a)%m;
+    }
+    return res;
+}
+\end{minted}
+
+Now , using this $O(\log b)$ method for binary exponentiation, we can now finally apply Fermat's little theorem. The final code looks like this: \clearpage
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int NcRmodP(int N, int R, int P)
+{
+    /*
+        Store all factorial modulo P
+        f[i] = (i!) % P
+    */
+    int f[N+1];f[0] = 1;
+    for(int i=1; i<=N; i++)
+        f[i] = (f[i-1] * 1LL * i) % P;
+    
+    int ans = f[N];
+
+    /*
+        Using Fermat's Little Theorem for Modulo Inverse
+    */
+    ans = (ans *1LL* modpow(f[R] , P-2, P))%P;
+    ans = (ans *1LL* modpow(f[N-R] , P-2, P))%P;
+
+    return ans;
+}
+\end{minted}
+
+\subsubsection{Complexity Analysis}
+The main time is spent in calculating the factorials modulo which is $O(N)$. We use Fermat's theorem twice with time complexity $O(\log P)$ each time. So the overall complexity is $O(N + 2 \log P)$. The space complexity is $O(N)$

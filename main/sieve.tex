@@ -1,0 +1,126 @@
+\chapter{The Sieve}
+
+\section{Introduction}
+Sieve is a method to find the set of all primes in a given range in an efficient way. Sieve of Eratosthenes, which is used the find the set of all natural primes upto $N$ is the most well known among them. This chapter covers Sieve of Eratosthenes along with some other kinds of sieves such as Linear Sieve which is an improvised version, and Segmented Sieve.
+
+\section{Sieve Of Eratosthenes}
+Sieve of Eratosthenes is an algorithm to find the set of primes in the range $[1,N]$ in $O(n \log(\log n))$ time, which is much better than the naive approach. If we go by naive approach, i.e. to check for each number whether it's prime, it would take around $O(N \sqrt{N})$ time.\\
+The algorithm is straightforward: we start by writing down all numbers between $2$ and $n$. Since $2$ is the smallest prime number, we label all correct multiples of $2$ as composite. A appropriate multiple of $x$ is an integer that is bigger than $x$ but divisible by $x$. Then we look for the next number that isn't composite, which in this case is $3$. As a result, $3$ is prime, and all correct multiples of $3$ are considered composite. The next unmarked number is $5$, which is the following prime number, and all correct multiples of it are marked. We repeat this method until all of the numbers in the row have been processed.\clearpage
+Let's code this up:
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int>sieve(int n)
+{
+    vector<int>my_primes;
+    vector<bool>prime(n+1, true);
+    for(int i=2; i <= n; i++)
+    {
+        if(prime[i])
+        {
+            my_primes.push_back(i);
+            for(int j=i*i; j <= n; j += i)
+                prime[j] = false;
+        }
+    }
+    return my_primes;
+}
+\end{minted}
+
+The reason we start the second loops from square of $i$ is as follows: Any composite number $x$ has atleast one factor that is less than or equal to $\sqrt{x}$. So, we can directly start from $i^2$ , as all composites less than this have already been marked. 
+
+\subsection{Complexity Analysis}
+At first, it might look like an $O(N^2)$ solution, since we are running two for loops. However, realize that for bigger values of $i$ , the second loop runs for much lesser number of iterations. For iteration $i$, the $j$ loops runs $\frac{n}{i}$ times.\\
+So, the overall complexity can be found by evaluating the expression:\\
+\begin{equation*}
+    \frac{n}{1} + \frac{n}{2} + \frac{n}{3} + \cdots + \frac{n}{n}
+\end{equation*}
+
+So how do we evaluate this? Realize that we can write the equation as $\sum_{i=1}^{n} \frac{n}{i} $. Obviously,
+\begin{align*}
+    \sum_{i=1}^{n} \frac{n}{i} &\le \int_{1}^{n} \frac{n}{x} \,dx\ \\
+    & \le n \log n
+\end{align*}
+So, we see that the overall complexity is less than or equal to $O(n \log n)$. Obviously it's lesser than this. After doing some heavyish math, we get the exact complexity as $O(n \log (\log n))$ \clearpage
+
+\subsection{Problem}
+Let's say we have an array $A$. We want to find all pairs of indices $i$ and $j$ such that $A[i]*A[j]$ is a perfect square, and $i < j$.\\
+\textbf{Solution:} The naive approach would be to scan through all indices $i$ and $j$ and check whether the condition holds. However, there exists a better approach to solve it using Sieve. Every number $A_i$ can be expressed as $y_i*z$ where $y_i$ is the largest square number that divides $A_i$. For example, $A_i = 2^7 5^4 7^3$ then $y_i = 2^6 5^4 7^2$ \\
+So, the problem reduces to - Finding indices in the array for which the $z$ value is same. Finding these $z$ values can be done using Sieve of Eratosthenes. The reader is encouraged to code this up themselves.
+
+\section{Linear Sieve}
+Linear Sieve is a somewhat improvised version of Eratosthenes. Where do we get this scope of improvement from? Realize that we are basically cancelling off all the non primes. There are some non primes which are getting crossed out more than once. For eg 12. It gets crossed out by both $2$ and $3$. If we can somehow ensure that each number gets crossed out only once, then we will reach linear time complexity.\\
+So what we do is : we try to cancel each number by it's lowest prime only. For eg. $12$ gets crossed out by only $2$ and $15$ gets crossed out by only $3$. By doing this, not only do we bring the complexity down to $O(n)$, but also find the prime factorization for every number indirectly. Let's have a look at the code first:
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int> linear_sieve(int n)
+{
+    vector<int>my_primes;
+    vector<int>lp(n+1);     //Stores least prime for each number
+
+    for(int i=2; i<=n ; i++)
+    {
+        if(lp[i] == 0) // i is prime
+        {
+            lp[i] = i;
+            my_primes.push_back(i);
+        }
+        /*
+            Scan the whole prime array until now
+            Ensure that you dont cross n hence second condition
+        */
+        for(int j=0; j< my_primes.size()&&i*my_primes[j]<=n&&my_primes[j] <= lp[i]; j++)
+            lp[i*my_primes[j]] = my_primes[j];
+    }
+    return my_primes;
+}
+\end{minted}
+If at any point, if lp[$i$] is 0, then the number is prime. So we just push it into our set. What we are trying to do is, let's say we reach a number $5$ and have discovered $2,3$, we set the lp values for the multiples of $5$ - corresponding to these primes. That is, lp[$10$] = $2$ and lp[$15$] = $3$.\\
+
+\subsection{Prime Factorization}
+The good thing about linear sieve apart from the improvised time complexity is that : it can be used to prime factorize any number from $1$ and $n$ later. This is done as follows: $x = \text{lp}[x] * \frac{x}{lp[x]}$\\
+For example: lp[$12$] = 2. So, $12$ = $2*$lp[$6$] = $2*2*$lp[$3$] = $2*2*3$   
+
+\section{Segmented Sieve}
+This is very similar to Sieve of Eratosthenes, except we deal with large numbers here. Let's say we want to find the set of primes in the range $[L,R]$, where $R$ maybe something as big as $10^{12}$, however $R-L$ is under $10^6 - 10^7$. We can use a very important fact: if a number $x$ is composite, then it has at least one factor less then $\sqrt{x}$. Using this fact, we first store all the primes upto $\sqrt{R}$ using linear sieve.
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<ll>segmented_sieve(ll L, ll R)
+{
+    vector<int>pr = linear_sieve(sqrt(R));
+    vector<char> isPrime(R - L + 1, true);
+    for (ll i : pr)
+        for (long long j = max(i * i, (L + i - 1) / i * i); j <= R; j += i)
+            isPrime[j - L] = false;
+    if (L == 1)
+        isPrime[0] = false;
+    vector<ll>ans;
+    for(int i=0; i<isPrime.size(); i++)
+    {
+        if(isPrime[i])
+            ans.push_back(i+L);
+    }
+    return ans;
+}
+\end{minted}
+Now we use these primes to strike off the numbers in this range. We used a base array with an offeset for this purpose, where $0$ corresponds to $L$, $1$ correcsponds to $L+1$ and so on. 

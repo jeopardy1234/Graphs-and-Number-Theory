@@ -1,0 +1,100 @@
+\chapter{Greatest Common Divisor}
+
+\section{Introduction}
+Greatest Common Divisor or GCD of two numbers $a$ and $b$ is the largest number $x$, such that it divides both $a$ and $b$. For example, the GCD of $32$ and $20$ is $4$. This is because $4$ is the largest number which divides both $32$ and $20$. In this chapter, we will first discuss Euclidean algorithm to find GCD. Then, we will look at the Extended Euclidean algorithm. This will form the basis for upcomping chapters.
+
+\section{Euclidean Algorithm for GCD}
+The algorithm is fairly simple. It states that
+\begin{equation}
+    \text{gcd}(a,b)=
+    \begin{cases}
+      a, & \text{if}\ b=0 \\
+      \text{gcd}(b,a\%b), & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+\subsection{Proof of Euclidean Algorithm}
+Proving the fact that $gcd(x,y) = gcd(x-y,y)$ would suffice
+  This is true because:
+
+\begin{enumerate}
+   \item Any integer that divides both $x$ and $y$ also divides $x-y$, so $gcd(x,y) \le gcd(x-y,y)$.  
+   \item Any integer that divides both $x-y$ and $y$ also divides $x$ and $y$. So, $gcd(x,y) \ge gcd(x-y,y)$
+\end{enumerate}
+Hence, $gcd(x,y) = gcd(x-y,y)$
+\subsection{Time Complexity}
+Notice that if $a \ge b$ then $a\%b < \frac{a}{2}$
+\subsubsection{Proof:}
+Lets take two cases:\\
+\begin{enumerate}
+  \item $b \le \frac{a}{2}$: This is obvious
+  \item $b > \frac{a}{2}$: $a\%b \le a-b$ and $a-b < \frac{a}{2}$ 
+\end{enumerate}
+Hence, the time complexity is $O(\log_2(\text{min} (a,b)))$\\
+The code is quite simple:
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int gcd(int a, int b)
+{
+	if(b == 0)
+		return a;
+	return gcd(b, a%b);
+}
+\end{minted}
+
+\section{Extended Euclidean Algorithm}
+There's a theorem which goes as follows: 
+If $d$ divides both $a$ and $b$ and $d = ax+by$ for some integers x and y, then necessarily $d = \text{gcd}(a,b)$. We are not really interested in proving this theorem. What we care about some values of $x$ and $y$ which satisfy this equation. \\
+Let's denote $gcd(a,b)$ as $g$. We will take help of Euclid's algorithm to solve this problem.\\
+Since $gcd(b, a\%b) = gcd(a,b) = g$,\\
+\begin{equation}
+\begin{split}
+ax + by &= g \\
+bx_1 + (a\%b)y_1 &= g
+\end{split}
+\end{equation}
+\\
+Now, $a\%b = a-\floor*{\frac{a}{b}}b$\\
+Substituting this in $(6.2)$ we get
+
+\begin{equation}
+\begin{split}
+x &= y_1\\
+y &= x_1 - y_1 \floor*{\frac{a}{b}}
+\end{split}
+\end{equation}
+
+That's it! We keep using this recursively. The code would look like this:
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+pair<int,int> extended_euclid(int a, int b)
+{
+    if(b == 0)
+    {
+        return {1,0};
+    }
+	int x1, y1;
+    tie(x1,y1) = extended_euclid(b, a%b);
+
+    int x = y1;
+    int y = x1 - (a/b)*y1;
+
+    return {x,y};
+}
+\end{minted}

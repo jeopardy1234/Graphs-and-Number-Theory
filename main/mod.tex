@@ -1,0 +1,60 @@
+\chapter{Modular Arithmetic}
+
+\section{Introduction}
+
+Modular arithmetic is a system of integer arithmetic in which numbers wrap around when they reach a certain value known as the modulus. Carl Friedrich Gauss, in his work Disquisitiones Arithmeticae, published in 1801, created the contemporary method to modular arithmetic.After one number is divided by another, the modulo operation yields the remainder or signed remainder of the division.Given two positive numbers $a$ and $n$, $a$ modulo $n$ (abbreviated as a mod n) is the remainder of the Euclidean division of $a$ by $n$, where $a$ is the dividend and $n$ is the divisor. We often denote $a \text{mod} b$ as $a\%b$.
+
+\section{Basic Operations}
+The basic operations include addition, subtraction and multiplication modulo. Modular division is a bit complicated which we will look at separately. Although the modulo value is permitted to be negative, in most cases we want it to be positive. So let's assume we have two positive integers $a$ and $b$. Their modulo arithmetic would look like:
+\begin{itemize}
+  \item \textbf{Modular Addition}: $(a+b)\%m = a\%m + b\%m$
+  \item \textbf{Modular Subtraction}: $(a-b)\%m = (a\%m - b\%m + m)\%m$
+  \item \textbf{Modular Addition}: $(a-b)\%m = (a\%m * b\%m)\%m$
+\end{itemize}
+\clearpage
+\section{Modular Division}
+Things get somewhat tricky here. We can no longer say that $(\frac{a}{b}) \%m = (\frac{a\%m}{b\%m})$. Why? Take an example : $a=6$, $b=2$, $c=5$. $(\frac{a}{b}) \%m  = 3 \%5 = 5$. Whereas, $(\frac{a\%m}{b\%m}) = \frac{1}{2}$?? Obviously, this is incorrect. So we come up with a rather different approach.\\
+Recall : How do we define multiplicative inverse ? Say we have a number $a$. The multiplicative inverse is a number $b$ such that $ab  = 1$. We define modular multiplicative inverse in a similar way. For a number $a$, the modular inverse wrt $m$ is a number $b$ such that $(ab)\%m = 1$. \\
+Once we find the multiplicative inverse, we can simply say that $(\frac{a}{b}) \% m  = a\%m*b^{-1}\%m$
+
+\subsection{Modular Inverse}
+For a number $a$, let $b$ be it's modulo inverse.
+\begin{align*}
+    &ab \equiv 1 \text{ mod } m\\
+    &ab-1 \equiv 0 \text{ mod } m\\
+    &ab - 1 = mq\\
+    &ab - mq = 1\\
+    &ab + mQ = 1\\
+\end{align*}
+
+Now, modulo inverse exists iff $a$ and $m$ are relatively prime. So, $\text{gcd}(a,m) = 1$. So the equationc can be rewritten as:
+\begin{align*}
+    &ab + mQ = \text{gcd}(a,m)\\
+\end{align*}
+So, we can use Extended Euclid Algorithm to find the modulo inverse.
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+int modulo_inverse(int a, int m)
+{
+    if(__gcd(a,m) == -1)
+        return -1;
+    else
+        return (extended_euclid(a,m).first + m)%m;
+}
+\end{minted}
+Finally, let's define the rule for modular division. Modular division is valid only if the following two conditions hold:
+\begin{enumerate}
+  \item Modular inverse of $b$ and $m$ exists, i.e $b$ and $m$ are relatively prime.
+  \item $b$ divides $a$, i.e. $a\%b = 0$.
+\end{enumerate}
+Let's say we want to find $60/6 \% 7$. Modulo inverse of $6$ wrt $7$ is $6$. So $60/6 \% 7$ is the same as $60 * 6 \% 7 = 3$.\\
+
+
+

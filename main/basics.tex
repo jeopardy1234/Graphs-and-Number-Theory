@@ -1,0 +1,65 @@
+\chapter{Graph Basics}
+
+\section{Introduction}
+A graph is a data structure made up of nodes and edges that is non-linear. The edges are lines or arcs that link any two nodes in the graph, and the nodes are also known as vertices. A graph can be described more formally as: A Graph consists of a finite set of vertices(or nodes) and set of Edges which connect a pair of nodes.In this chapter, we will look at the most basics techniques that are employed in most graph algorithms.
+
+\section{Depth First Search}
+The depth-first search technique is used to traverse or explore data structures such as trees and graphs. The algorithm starts from the root node (in the case of a graph, any random node can be used as the root node) and examines each branch as far as feasible before retracing. So the fundamental concept is to start at the root node and mark it visited. Then, we do a recursive traversal over the children until all the vertices are visited.\\
+We maintain a boolean array to keep a track of the already visited noes. Then we check the adjacency list of that node. If we find that any node is unvisited, we start dfs from that node, and the above described process repeats.\clearpage
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+
+void dfs(int ver, bool vis[])
+{   
+    vis[ver] = true;
+    for(auto &i : ver)
+    {
+        if(!vis[i])
+        {
+            dfs(i,vis);
+        }
+    }
+}
+\end{minted}
+
+
+\section{Breadth First Search}
+One of the most basic and important graph searching methods is breadth first search.The path found by breadth first search to any node is the shortest path to that node, i.e. the path with the lowest number of edges in unweighted networks, as a result of how the process works.The algorithm starts with some start vertex $s$ which is pushed into a queue. What we want to do is : Discover all the nodes at a particular depth first before moving to the next level. 
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+queue<int> q;
+bool used[n];   // Visited array
+vector<int> d(n);
+q.push(s);
+used[s] = true;
+while (!q.empty()){
+    int v = q.front();
+    q.pop();
+    for (int u : adj[v]) {
+        if (used[u] == false) {
+            used[u] = true;
+            q.push(u);
+            d[u] = d[v] + 1;
+        }
+    }
+}
+\end{minted}
+
+
+So what we do is, we start from this source vertex, and push all its children into the queue. We then pop off this node. Then we push all the children of the top of stack into the queue and then pop off this node. We keep repeating this process until the queue isn't empty. We also ensure that no node is visited twice.\\
+To ensure that no node is visited twice, we maintain a boolean array. Every time we push a node into the queue, we set the visited value of that node to true. If the child in a particular iteration is already visited, we do nothing. \\
+BFS can be very useful in finding the depth of a particular node. The above program is a good description of that. (Depth might not make a lot of sense in general graphs, so assume its a tree). Whenever we push a child onto the queue, we set its depth equal to its parent's depth + 1

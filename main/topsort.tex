@@ -1,0 +1,62 @@
+\chapter{Topological Sorting}
+
+\section{Introduction}
+A topological sort or topological ordering of a directed graph is a linear ordering of its vertices in which $u$ occurs before $v$ in the ordering for every directed edge $uv$ from vertex $u$ to vertex $v$.To put it another way, we're looking for a permutation of the vertices (topological order) that matches to the order specified by all of the graph's edges.Non-unique topological order is possible (for example, if the graph is empty; or if there exist three vertices a, b, c for which there exist paths from a to b and from a to c but not paths from b to c or from c to b).
+
+\section{Kahn's Algorithm}
+Given a directed acyclic graph, we need to find a valid topological sorting of the vertices. Kahn's algorithm is a BFS based algorithm to find the toposort. The idea is quite simple - we keep selecting vertices with $0$ indegree.\\
+Before we get to that, let's prove that a DAG has atleast one vertex with 0 indegree and atleast one vertex with 0 outdegree. 
+\subsubsection{Proof}
+There are many ways to prove this. One way would be : DAG doesn't have cycles, so let's find two points $u$, $v$ such that $d(u,v)$ is maximum. For such vertices $u$ and $v$, there cannot be any incoming edge in $u$. Nor can there be any outgoing edge from $v$. So, indegree of $u$ is $0$, and outdegree of $v$ is $0$.\\
+Another method would be to say that - if all edges have indegree / outdegree greater than 0, then the graph would contain a cycle. Hence, the resultant graph is no longer a DAG.\\
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+fontsize=\footnotesize,
+linenos
+]
+{cpp}
+vector<int>topsort(vector<vector<int>>adj, int n)
+{
+    vector<int>indegree(n+1,0);
+    vector<int>ans;
+    for(int i=1; i<=n; i++)
+    {
+        for(auto &j : adj[i])
+            indegree[j]++;
+    }
+    queue<int>q;
+    for(int i=1; i<=n; i++)
+        if(indegree[i] == 0)
+            q.push(i);
+    while(!q.empty())
+    {
+        int node = q.front();
+        for(auto  &i : adj[node])
+        {
+            indegree[i]--;
+            if(indegree[i] == 0)
+                q.push(i);
+        }
+        ans.push_back(node);
+        q.pop();
+    }
+    return ans;
+}
+\end{minted}
+Coming to the algorithm, we first push all the zero indegree nodes into a queue. We remove all these nodes while changeing the degree of their connected nodes. DAG shall remain DAG even after removing some vertices. So we will definitely get more zero indegree vertices. So we push these vertices into the queue now, and repeat the same process until we get an empty graph.
+
+\subsection{Complexity Analysis}
+The time complexity will be $O(|V|+|E|)$ as we are inspecting all edges connected to each vertex. The space complexity would be $O(|V|)$\\\\
+Let's try to solve a couple of problems for a better understanding.
+
+\section{Problems}
+1) As we discussed earlier, there may exist multiple valid topological sortings. Find  the one which is lexicographically minimum.\\
+\textbf{Solution:} This is quite simple. We need to use some data structure which inserts the element in sorted order in place of queue. Obviously, (in C++) this data structure is a set. Why do we not use set in the original algorithm? Because set operations are $O(\log n)$ while that of queue are $O(1)$.\\\\
+2)Given a directed acyclic graph $G$, find the shortest possible path from source node $S$ to destination $T$.\\
+\textbf{Solution:}For a general graph, we can use the Bellman Ford algorithm which works in $O(VE)$. If the graph doesn't have negative edges, Dijkstra would do it in $O(V + E \log V)$. However, since the given graph is acyclic and directed, there's a much more efficient method to do it. Since it's a DAG, we can come up with some topological sorting. Say $u$ and $v$ are two elements in the topological sorting at indices $i$ and $j$ such that $i < j$, then we can definitely say that there's no edge from $v$ to $u$. But how? Let's that there does exist an edge from $v$ to $u$. This means event $v$ should occur before $u$. And by definition of topological sorting, $v$ should come before $u$ in the valid sorting. But we know that $v$ comes after $u$. Hence, our assumption is false, and there can't be any edge from $v$ to $u$. \\
+Let's use this fact to our advantage. Find a valid toposort for the graph. Maintain a distance array $\text{dist[V]}$. Inititally, set all the distances to infinity, except $\text{dist}[s] = 0$.Now, just like dijkstra, keep relaxing each vertex. This relaxing should be in the order of topological sort. Relaxing is done as follows: For a vertex $v$, $\forall(u,v) \in E$, $\text{dist[v] = min(dist[u] + len(u,v) , dist[v]})$.\\
+The time complexity  for this would be $O(E+V)$, which is much better than both - Dijkstra and Bellman Ford, and it accounts for negative weights as well.
+
