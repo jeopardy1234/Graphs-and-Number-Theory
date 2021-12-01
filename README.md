@@ -1,13 +1,5 @@
 # Graphs-and-Number-Theory
 
-## Project Link
-
-https://github.com/jeopardy1234/Graphs-and-Number-Theory
-
-`main.pdf` contains the actual book
-
-`main` directory contains all the `.tex` files
-
 ## Prerequisites:
 
 The reader must have some basic insight on graphs and its types. The first chapter lists the basic algorithms which will be used in the subsequent chapters implicitly. You may directly start reading from chapter 2 if you know these basics. 
