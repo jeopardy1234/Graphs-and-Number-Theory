@@ -2,11 +2,9 @@
 
 ## Prerequisites:
 
-The reader must have some basic insight on graphs and its types. The first chapter lists the important basic algorithms which will be used in the subsequent chapters implicitly. You may directly start reading from chapter $2$ if you know these basics. 
+The reader must have some basic insight on graphs and its types. The first chapter lists the basic algorithms which will be used in the subsequent chapters implicitly. You may directly start reading from chapter 2 if you know these basics. 
 
-For the Number Theory section, nothing much is required. You should just know the basics of Algebra. This includes some insights on concepts like GCD and binary exponentiation
-
-
+For the Number Theory section, nothing much is required. You should just know the basics of Algebra. This includes some insights on concepts like GCD, binary exponentiation and binary coefficients.
 
 ## Topics Covered:
 
@@ -39,5 +37,5 @@ There were other topics I wanted to address but couldn't due to time constraints
 
 - [ ] Kuhn's Algorithm for Bipartite Matching
 - [ ] Chinese Remainder Theorem
-- [ ] LCA in $O(1)$
+- [ ] LCA in O(1)
 
