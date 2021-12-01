@@ -15,7 +15,7 @@ Apart from basic DFS and BFS in the introductory chapter, the book covers the fo
 - [x] Floyd Warshall
 - [x] Binary Lifting
 - [x] Lowest Common Ancestor(LCA)
-- [x] Jarvis Mar
+- [x] Jarvis March
 - [x] Graham's Scan
 - [x] Prim's Algorithm
 - [x] Kruskal's Algorithm
